@@ -10,6 +10,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
 @Controller
@@ -32,11 +33,38 @@ public class ProductController {
     }
 
     @PostMapping("/product")
-    public String saveProduct(@Valid @ModelAttribute Product product, BindingResult bindingResult) {
+    public String saveProduct(@Valid @ModelAttribute Product product, BindingResult bindingResult, Model model) {
         if(bindingResult.hasErrors()){
+            model.addAttribute("types", ProductType.values());
             return "newProduct";
         }
         productRepository.save(product);
-        return "/";
+        return "redirect:/";
     }
+
+    @GetMapping("/product/edit/{id}")
+    public String editProduct(@PathVariable Long id, Model model) {
+        Product product = productRepository.findById(id).orElseThrow(()-> new IllegalArgumentException("Invalid product id: " + id));
+        model.addAttribute("product", product);
+        model.addAttribute("types", ProductType.values());
+        return "editProduct";
+    }
+
+    @PostMapping("/product/{id}")
+    public String updateProduct(@PathVariable Long id, @Valid @ModelAttribute Product product, BindingResult bindingResult, Model model) {
+        if(bindingResult.hasErrors()){
+            model.addAttribute("types", ProductType.values());
+            return "editPrduct";
+        }
+        productRepository.save(product);
+        return "redirect:/";
+    }
+
+    @GetMapping("/product/delete/{id}")
+    public String deleteProduct(@PathVariable Long id, Model model) {
+        productRepository.deleteById(id);
+        return "redirect:/";
+    }
+
+
 }
